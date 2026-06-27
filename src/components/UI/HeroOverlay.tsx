@@ -66,9 +66,9 @@ export const HeroOverlay = () => {
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', pointerEvents: 'none' }}>
-      
+
       {/* 1. Serene Above-Water Caption Card */}
-      <motion.div 
+      <motion.div
         style={{
           position: 'absolute',
           top: 0,
@@ -91,9 +91,9 @@ export const HeroOverlay = () => {
           transition={{ duration: 1.2, ease: 'easeOut' }}
           style={{ textAlign: 'center', pointerEvents: 'auto', padding: '0 20px' }}
         >
-          <motion.h1
+          <h1
             style={{
-              fontSize: '5rem',
+              fontSize: '3.5rem',
               fontWeight: 800,
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
@@ -105,8 +105,8 @@ export const HeroOverlay = () => {
             }}
           >
             Fisherman's Love
-          </motion.h1>
-          
+          </h1>
+
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -122,7 +122,7 @@ export const HeroOverlay = () => {
           >
             Cast your line into the unknown. A community for those who find serenity in the sea.
           </motion.p>
-          
+
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -137,7 +137,7 @@ export const HeroOverlay = () => {
       </motion.div>
 
       {/* 2. Poetic Underwater Caption Card (Hooked Thrills) */}
-      <motion.div 
+      <motion.div
         style={{
           position: 'absolute',
           top: 0,
@@ -170,7 +170,7 @@ export const HeroOverlay = () => {
           >
             Tension in the Quiet
           </h1>
-          
+
           <p
             style={{
               fontSize: '1.25rem',
@@ -184,7 +184,7 @@ export const HeroOverlay = () => {
           >
             A sudden tug, a racing heartbeat. Experience the wild adrenaline of the fight, where silent depths spark into sudden thrill.
           </p>
-          
+
           <motion.button
             className="btn-primary"
             style={{
@@ -200,7 +200,7 @@ export const HeroOverlay = () => {
       </motion.div>
 
       {/* 3. Deep Marine Wilderness Caption Card */}
-      <motion.div 
+      <motion.div
         style={{
           position: 'absolute',
           top: 0,
@@ -233,7 +233,7 @@ export const HeroOverlay = () => {
           >
             Serene. Calm. Dark.
           </h1>
-          
+
           <p
             style={{
               fontSize: '1.25rem',
@@ -247,7 +247,7 @@ export const HeroOverlay = () => {
           >
             Descend into the quiet wilderness. A sanctuary of glowing kelp, ancient coral gardens, and silent giants drifting through the dark deep.
           </p>
-          
+
           <motion.button
             className="btn-primary"
             style={{
