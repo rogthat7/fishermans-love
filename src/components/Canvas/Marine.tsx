@@ -11,6 +11,21 @@ export const Marine = ({ scrollProgress }: MarineProps) => {
   const bigFishShadowRef = useRef<THREE.Group>(null);
   const smallFishGroupRef = useRef<THREE.Group>(null);
   const carpRef = useRef<THREE.Group>(null);
+  const carpBody1Ref = useRef<THREE.Group>(null);
+  const carpBody2Ref = useRef<THREE.Group>(null);
+  const carpBody3Ref = useRef<THREE.Group>(null);
+  const carpPeduncleRef = useRef<THREE.Group>(null);
+  const carpTailRef = useRef<THREE.Group>(null);
+  const carpHeadRef = useRef<THREE.Group>(null);
+  const carpMouthRef = useRef<THREE.Group>(null);
+  const carpGillLRef = useRef<THREE.Group>(null);
+  const carpGillRRef = useRef<THREE.Group>(null);
+  const pectLRef = useRef<THREE.Group>(null);
+  const pectRRef = useRef<THREE.Group>(null);
+  const barbel1Ref = useRef<THREE.Group>(null);
+  const barbel2Ref = useRef<THREE.Group>(null);
+  const barbel3Ref = useRef<THREE.Group>(null);
+  const barbel4Ref = useRef<THREE.Group>(null);
 
   // Generate dense vegetation and corals
   const sceneData = useMemo(() => {
@@ -149,26 +164,59 @@ export const Marine = ({ scrollProgress }: MarineProps) => {
         carpRef.current.position.set(x, -8.3, 0.8);
         carpRef.current.rotation.y = Math.PI / 2; // Always face right
 
-        // Gentle body roll while swimming
+        // 1. Serpentine body wave: propagate Y-rotation down the hierarchy!
+        const swimSpeed = 7.5;
+        const waveAngle = Math.sin(t * swimSpeed);
+        
+        // Gentle overall body roll
         carpRef.current.rotation.z = Math.sin(t * 5.5) * 0.08;
 
-        // Body wave undulation — tail peduncle (child 10)
-        const peduncle = carpRef.current.children[10] as THREE.Mesh;
-        if (peduncle) peduncle.rotation.y = Math.sin(t * 7.5) * 0.28;
+        if (carpBody1Ref.current) {
+          carpBody1Ref.current.rotation.y = waveAngle * 0.08;
+        }
+        
+        if (carpHeadRef.current) {
+          carpHeadRef.current.rotation.y = -waveAngle * 0.05;
+        }
+        
+        if (carpBody2Ref.current) {
+          carpBody2Ref.current.rotation.y = Math.sin(t * swimSpeed - 0.6) * 0.18;
+        }
+        
+        if (carpBody3Ref.current) {
+          carpBody3Ref.current.rotation.y = Math.sin(t * swimSpeed - 1.2) * 0.26;
+        }
+        
+        if (carpPeduncleRef.current) {
+          carpPeduncleRef.current.rotation.y = Math.sin(t * swimSpeed - 1.8) * 0.32;
+        }
+        
+        if (carpTailRef.current) {
+          carpTailRef.current.rotation.y = Math.sin(t * swimSpeed - 2.4) * 0.42;
+        }
 
-        // Forked tail — upper lobe (child 13) and lower lobe (child 14)
-        const tailUpper = carpRef.current.children[13] as THREE.Mesh;
-        const tailLower = carpRef.current.children[14] as THREE.Mesh;
-        const tailWag = Math.sin(t * 7.5) * 0.38;
-        if (tailUpper) tailUpper.rotation.y = tailWag;
-        if (tailLower) tailLower.rotation.y = tailWag;
+        // 2. Swaying Barbels (secondary lag-behind whiskers sway)
+        const whiskerSway = Math.sin(t * (swimSpeed * 1.3)) * 0.12;
+        if (barbel1Ref.current) barbel1Ref.current.rotation.z = -0.35 + whiskerSway;
+        if (barbel2Ref.current) barbel2Ref.current.rotation.z = 0.35 - whiskerSway;
+        if (barbel3Ref.current) barbel3Ref.current.rotation.z = -0.5 + whiskerSway;
+        if (barbel4Ref.current) barbel4Ref.current.rotation.z = 0.5 - whiskerSway;
 
-        // Pectoral fin flap (children 15 and 16)
-        const pectL = carpRef.current.children[15] as THREE.Mesh;
-        const pectR = carpRef.current.children[16] as THREE.Mesh;
-        const pectFlap = Math.sin(t * 5.0) * 0.22;
-        if (pectL) pectL.rotation.z = -0.55 + pectFlap;
-        if (pectR) pectR.rotation.z = 0.55 - pectFlap;
+        // 3. Puckering Mouth (Breathing simulation)
+        const breathScale = Math.sin(t * 3.5) * 0.15 + 0.95;
+        if (carpMouthRef.current) {
+          carpMouthRef.current.scale.set(breathScale, breathScale, 1.0 + (1.0 - breathScale) * 0.5);
+        }
+
+        // 4. Gill covers pumping water (flaring outward offset from mouth)
+        const gillFlare = Math.sin(t * 3.5 - Math.PI / 2) * 0.06;
+        if (carpGillLRef.current) carpGillLRef.current.rotation.y = 0.4 + gillFlare;
+        if (carpGillRRef.current) carpGillRRef.current.rotation.y = -0.4 - gillFlare;
+
+        // 5. Pectoral fin flapping
+        const pectFlap = Math.sin(t * (swimSpeed * 0.85)) * 0.18;
+        if (pectLRef.current) pectLRef.current.rotation.z = 0.55 + pectFlap;
+        if (pectRRef.current) pectRRef.current.rotation.z = -0.55 - pectFlap;
       }
     }
   });
@@ -303,176 +351,215 @@ export const Marine = ({ scrollProgress }: MarineProps) => {
           BIG DETAILED CARP - swimming left to right
           ===================================================== */}
       <group ref={carpRef} position={[-6.5, -8.3, 0.8]}>
+        {/* Body 1: Front Torso (contains pectoral fins, head, body2) */}
+        <group ref={carpBody1Ref}>
+          {/* Body 1 Mesh */}
+          <mesh castShadow scale={[0.72, 0.55, 0.5]}>
+            <sphereGeometry args={[1, 12, 10]} />
+            <meshStandardMaterial color="#c0540a" roughness={0.25} metalness={0.25} emissive="#f07020" emissiveIntensity={0.55} />
+          </mesh>
+          
+          {/* Pale belly highlight front */}
+          <mesh position={[0, -0.42, 0]} scale={[0.55, 0.18, 0.4]}>
+            <sphereGeometry args={[1, 8, 6]} />
+            <meshStandardMaterial color="#f5c878" roughness={0.3} emissive="#f5c878" emissiveIntensity={0.3} />
+          </mesh>
 
-        {/* === BODY === */}
-        {/* Main mid-body (fat rounded torso) - Child 0 */}
-        <mesh castShadow scale={[0.72, 0.55, 1.1]}>
-          <sphereGeometry args={[1, 12, 10]} />
-          <meshStandardMaterial color="#c0540a" roughness={0.25} metalness={0.25} emissive="#f07020" emissiveIntensity={0.55} />
-        </mesh>
+          {/* Left Pectoral Fin Group */}
+          <group ref={pectLRef} position={[-0.72, -0.12, 0.2]} rotation={[0.15, 0.2, 0.55]}>
+            <mesh>
+              <boxGeometry args={[0.55, 0.05, 0.38]} />
+              <meshStandardMaterial color="#e07818" roughness={0.3} emissive="#e07818" emissiveIntensity={0.45} flatShading />
+            </mesh>
+          </group>
 
-        {/* Pale belly highlight - Child 1 */}
-        <mesh position={[0, -0.42, 0.1]} scale={[0.55, 0.18, 0.9]}>
-          <sphereGeometry args={[1, 8, 6]} />
-          <meshStandardMaterial color="#f5c878" roughness={0.3} emissive="#f5c878" emissiveIntensity={0.3} />
-        </mesh>
+          {/* Right Pectoral Fin Group */}
+          <group ref={pectRRef} position={[0.72, -0.12, 0.2]} rotation={[0.15, -0.2, -0.55]}>
+            <mesh>
+              <boxGeometry args={[0.55, 0.05, 0.38]} />
+              <meshStandardMaterial color="#e07818" roughness={0.3} emissive="#e07818" emissiveIntensity={0.45} flatShading />
+            </mesh>
+          </group>
 
-        {/* Gill plate right (operculum) - Child 2 */}
-        <mesh position={[0.68, 0.05, 0.72]} rotation={[0.1, -0.4, 0.05]} scale={[0.22, 0.34, 0.18]}>
-          <sphereGeometry args={[1, 6, 5]} />
-          <meshStandardMaterial color="#b84d08" roughness={0.2} metalness={0.3} emissive="#e06010" emissiveIntensity={0.4} flatShading />
-        </mesh>
+          {/* Head Group (protrudes forward at Z > 0) */}
+          <group ref={carpHeadRef} position={[0, 0.05, 0.45]}>
+            {/* Head Mesh */}
+            <mesh scale={[0.6, 0.5, 0.52]} castShadow>
+              <sphereGeometry args={[1, 10, 8]} />
+              <meshStandardMaterial color="#c0540a" roughness={0.25} metalness={0.2} emissive="#f07020" emissiveIntensity={0.5} />
+            </mesh>
 
-        {/* Gill plate left (operculum) - Child 3 */}
-        <mesh position={[-0.68, 0.05, 0.72]} rotation={[0.1, 0.4, 0.05]} scale={[0.22, 0.34, 0.18]}>
-          <sphereGeometry args={[1, 6, 5]} />
-          <meshStandardMaterial color="#b84d08" roughness={0.2} metalness={0.3} emissive="#e06010" emissiveIntensity={0.4} flatShading />
-        </mesh>
+            {/* Puckering Mouth Group */}
+            <group ref={carpMouthRef} position={[0, -0.18, 0.5]}>
+              <mesh rotation={[Math.PI / 2, 0, 0]} scale={[0.12, 0.07, 0.12]}>
+                <cylinderGeometry args={[1, 0.8, 1, 8]} />
+                <meshStandardMaterial color="#8b2500" roughness={0.5} />
+              </mesh>
+            </group>
 
-        {/* === HEAD === */}
-        {/* Blunt rounded head - Child 4 */}
-        <mesh position={[0, 0.05, 1.05]} scale={[0.6, 0.5, 0.52]} castShadow>
-          <sphereGeometry args={[1, 10, 8]} />
-          <meshStandardMaterial color="#c0540a" roughness={0.25} metalness={0.2} emissive="#f07020" emissiveIntensity={0.5} />
-        </mesh>
+            {/* Gill cover right (operculum) */}
+            <group ref={carpGillRRef} position={[0.6, 0.0, -0.15]} rotation={[0.1, -0.4, 0.05]}>
+              <mesh scale={[0.22, 0.34, 0.18]}>
+                <sphereGeometry args={[1, 6, 5]} />
+                <meshStandardMaterial color="#b84d08" roughness={0.2} metalness={0.3} emissive="#e06010" emissiveIntensity={0.4} flatShading />
+              </mesh>
+            </group>
 
-        {/* Protruding mouth (carp downward-facing lips) - Child 5 */}
-        <mesh position={[0, -0.18, 1.55]} rotation={[Math.PI / 2, 0, 0]} scale={[0.12, 0.07, 0.12]}>
-          <cylinderGeometry args={[1, 0.8, 1, 8]} />
-          <meshStandardMaterial color="#8b2500" roughness={0.5} />
-        </mesh>
+            {/* Gill cover left (operculum) */}
+            <group ref={carpGillLRef} position={[-0.6, 0.0, -0.15]} rotation={[0.1, 0.4, 0.05]}>
+              <mesh scale={[0.22, 0.34, 0.18]}>
+                <sphereGeometry args={[1, 6, 5]} />
+                <meshStandardMaterial color="#b84d08" roughness={0.2} metalness={0.3} emissive="#e06010" emissiveIntensity={0.4} flatShading />
+              </mesh>
+            </group>
 
-        {/* Eye right - Child 6 */}
-        <mesh position={[0.52, 0.14, 1.2]}>
-          <sphereGeometry args={[0.085, 8, 8]} />
-          <meshBasicMaterial color="#1a0a00" />
-        </mesh>
-        {/* Eye shine right - Child 7 */}
-        <mesh position={[0.56, 0.17, 1.24]}>
-          <sphereGeometry args={[0.025, 6, 6]} />
-          <meshBasicMaterial color="#ffffff" />
-        </mesh>
+            {/* Eyes */}
+            <mesh position={[0.48, 0.1, 0.32]}>
+              <sphereGeometry args={[0.085, 8, 8]} />
+              <meshBasicMaterial color="#1a0a00" />
+            </mesh>
+            <mesh position={[0.52, 0.13, 0.36]}>
+              <sphereGeometry args={[0.025, 6, 6]} />
+              <meshBasicMaterial color="#ffffff" />
+            </mesh>
+            <mesh position={[-0.48, 0.1, 0.32]}>
+              <sphereGeometry args={[0.085, 8, 8]} />
+              <meshBasicMaterial color="#1a0a00" />
+            </mesh>
+            <mesh position={[-0.52, 0.13, 0.36]}>
+              <sphereGeometry args={[0.025, 6, 6]} />
+              <meshBasicMaterial color="#ffffff" />
+            </mesh>
 
-        {/* Eye left - Child 8 */}
-        <mesh position={[-0.52, 0.14, 1.2]}>
-          <sphereGeometry args={[0.085, 8, 8]} />
-          <meshBasicMaterial color="#1a0a00" />
-        </mesh>
-        {/* Eye shine left - Child 9 */}
-        <mesh position={[-0.56, 0.17, 1.24]}>
-          <sphereGeometry args={[0.025, 6, 6]} />
-          <meshBasicMaterial color="#ffffff" />
-        </mesh>
+            {/* Barbels (4 Whiskers) */}
+            <group ref={barbel1Ref} position={[0.18, -0.15, 0.45]} rotation={[0.55, 0.25, -0.35]}>
+              <mesh>
+                <cylinderGeometry args={[0.018, 0.004, 0.52, 6]} />
+                <meshBasicMaterial color="#f5c41a" />
+              </mesh>
+            </group>
+            <group ref={barbel2Ref} position={[-0.18, -0.15, 0.45]} rotation={[0.55, -0.25, 0.35]}>
+              <mesh>
+                <cylinderGeometry args={[0.018, 0.004, 0.52, 6]} />
+                <meshBasicMaterial color="#f5c41a" />
+              </mesh>
+            </group>
+            <group ref={barbel3Ref} position={[0.26, -0.25, 0.4]} rotation={[0.75, 0.3, -0.5]}>
+              <mesh>
+                <cylinderGeometry args={[0.013, 0.003, 0.38, 6]} />
+                <meshBasicMaterial color="#e8b010" />
+              </mesh>
+            </group>
+            <group ref={barbel4Ref} position={[-0.26, -0.25, 0.4]} rotation={[0.75, -0.3, 0.5]}>
+              <mesh>
+                <cylinderGeometry args={[0.013, 0.003, 0.38, 6]} />
+                <meshBasicMaterial color="#e8b010" />
+              </mesh>
+            </group>
+          </group>
 
-        {/* Tail peduncle (narrow caudal connector) - Child 10 */}
-        <mesh position={[0, 0.04, -1.15]} scale={[0.3, 0.28, 0.55]} castShadow>
-          <sphereGeometry args={[1, 8, 6]} />
-          <meshStandardMaterial color="#b84d08" roughness={0.3} emissive="#e06820" emissiveIntensity={0.45} />
-        </mesh>
+          {/* Body 2: Mid Torso (attached at Z < 0 relative to Body 1) */}
+          <group ref={carpBody2Ref} position={[0, 0, -0.45]}>
+            {/* Body 2 Mesh */}
+            <mesh castShadow scale={[0.68, 0.53, 0.5]}>
+              <sphereGeometry args={[1, 12, 10]} />
+              <meshStandardMaterial color="#c0540a" roughness={0.25} metalness={0.25} emissive="#f07020" emissiveIntensity={0.55} />
+            </mesh>
 
-        {/* === FINS === */}
-        {/* Long sweeping dorsal fin - Child 11 */}
-        <mesh position={[0, 0.62, -0.1]} rotation={[0.05, 0, 0]} scale={[0.03, 1, 2.2]}>
-          <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color="#e07818" roughness={0.35} emissive="#e07818" emissiveIntensity={0.5} flatShading />
-        </mesh>
+            {/* Pale belly highlight mid */}
+            <mesh position={[0, -0.4, 0]} scale={[0.53, 0.18, 0.4]}>
+              <sphereGeometry args={[1, 8, 6]} />
+              <meshStandardMaterial color="#f5c878" roughness={0.3} emissive="#f5c878" emissiveIntensity={0.3} />
+            </mesh>
 
-        {/* Dorsal leading-edge spine - Child 12 */}
-        <mesh position={[0, 0.78, 0.65]} rotation={[-0.28, 0, 0]}>
-          <boxGeometry args={[0.04, 0.42, 0.06]} />
-          <meshStandardMaterial color="#f08020" roughness={0.2} />
-        </mesh>
+            {/* Dorsal Fin */}
+            <mesh position={[0, 0.55, 0.1]} rotation={[0.05, 0, 0]} scale={[0.03, 0.9, 0.8]}>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="#e07818" roughness={0.35} emissive="#e07818" emissiveIntensity={0.5} flatShading />
+            </mesh>
+            <mesh position={[0, 0.72, 0.45]} rotation={[-0.28, 0, 0]}>
+              <boxGeometry args={[0.04, 0.42, 0.06]} />
+              <meshStandardMaterial color="#f08020" roughness={0.2} />
+            </mesh>
 
-        {/* Forked caudal tail upper lobe - Child 13 */}
-        <mesh position={[0, 0.34, -1.75]} rotation={[0.45, 0, 0]}>
-          <boxGeometry args={[0.05, 0.72, 0.58]} />
-          <meshStandardMaterial color="#e07818" roughness={0.3} emissive="#e07818" emissiveIntensity={0.5} flatShading />
-        </mesh>
+            {/* Pelvic Fins */}
+            <mesh position={[0.35, -0.5, 0.1]} rotation={[0.5, 0.1, -0.6]}>
+              <boxGeometry args={[0.35, 0.04, 0.25]} />
+              <meshStandardMaterial color="#c85e10" roughness={0.4} emissive="#c85e10" emissiveIntensity={0.35} flatShading />
+            </mesh>
+            <mesh position={[-0.35, -0.5, 0.1]} rotation={[0.5, -0.1, 0.6]}>
+              <boxGeometry args={[0.35, 0.04, 0.25]} />
+              <meshStandardMaterial color="#c85e10" roughness={0.4} emissive="#c85e10" emissiveIntensity={0.35} flatShading />
+            </mesh>
 
-        {/* Forked caudal tail lower lobe - Child 14 */}
-        <mesh position={[0, -0.28, -1.75]} rotation={[-0.45, 0, 0]}>
-          <boxGeometry args={[0.05, 0.62, 0.52]} />
-          <meshStandardMaterial color="#d06010" roughness={0.3} emissive="#d06010" emissiveIntensity={0.5} flatShading />
-        </mesh>
+            {/* Overlapping Scale overlays on Body 2 */}
+            {/* Flank Right */}
+            <mesh position={[0.6, 0.15, 0.1]} rotation={[0.1, -0.5, 0.2]} scale={[0.18, 0.12, 0.04]}>
+              <sphereGeometry args={[1, 5, 4]} />
+              <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
+            </mesh>
+            <mesh position={[0.62, 0.0, -0.1]} rotation={[0.05, -0.5, 0.1]} scale={[0.18, 0.12, 0.04]}>
+              <sphereGeometry args={[1, 5, 4]} />
+              <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
+            </mesh>
+            {/* Flank Left */}
+            <mesh position={[-0.6, 0.15, 0.1]} rotation={[0.1, 0.5, -0.2]} scale={[0.18, 0.12, 0.04]}>
+              <sphereGeometry args={[1, 5, 4]} />
+              <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
+            </mesh>
+            <mesh position={[-0.62, 0.0, -0.1]} rotation={[0.05, 0.5, -0.1]} scale={[0.18, 0.12, 0.04]}>
+              <sphereGeometry args={[1, 5, 4]} />
+              <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
+            </mesh>
 
-        {/* Right pectoral fin (large paddle) - Child 15 */}
-        <mesh position={[0.72, -0.12, 0.62]} rotation={[0.15, -0.2, -0.55]}>
-          <boxGeometry args={[0.55, 0.05, 0.38]} />
-          <meshStandardMaterial color="#e07818" roughness={0.3} emissive="#e07818" emissiveIntensity={0.45} flatShading />
-        </mesh>
+            {/* Body 3: Rear Torso */}
+            <group ref={carpBody3Ref} position={[0, 0, -0.45]}>
+              {/* Body 3 Mesh */}
+              <mesh castShadow scale={[0.55, 0.42, 0.45]}>
+                <sphereGeometry args={[1, 10, 8]} />
+                <meshStandardMaterial color="#b84d08" roughness={0.3} emissive="#e06820" emissiveIntensity={0.45} />
+              </mesh>
 
-        {/* Left pectoral fin - Child 16 */}
-        <mesh position={[-0.72, -0.12, 0.62]} rotation={[0.15, 0.2, 0.55]}>
-          <boxGeometry args={[0.55, 0.05, 0.38]} />
-          <meshStandardMaterial color="#e07818" roughness={0.3} emissive="#e07818" emissiveIntensity={0.45} flatShading />
-        </mesh>
+              {/* Anal fin */}
+              <mesh position={[0, -0.45, -0.1]} rotation={[0.7, 0, 0]}>
+                <boxGeometry args={[0.04, 0.28, 0.42]} />
+                <meshStandardMaterial color="#c85e10" roughness={0.4} emissive="#c85e10" emissiveIntensity={0.3} flatShading />
+              </mesh>
 
-        {/* Right ventral / pelvic fin - Child 17 */}
-        <mesh position={[0.35, -0.52, 0.1]} rotation={[0.5, 0.1, -0.6]}>
-          <boxGeometry args={[0.35, 0.04, 0.25]} />
-          <meshStandardMaterial color="#c85e10" roughness={0.4} emissive="#c85e10" emissiveIntensity={0.35} flatShading />
-        </mesh>
+              {/* Flank scales Body 3 */}
+              <mesh position={[0.42, 0.05, 0.0]} rotation={[0.0, -0.5, 0.0]} scale={[0.15, 0.1, 0.04]}>
+                <sphereGeometry args={[1, 5, 4]} />
+                <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
+              </mesh>
+              <mesh position={[-0.42, 0.05, 0.0]} rotation={[0.0, 0.5, 0.0]} scale={[0.15, 0.1, 0.04]}>
+                <sphereGeometry args={[1, 5, 4]} />
+                <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
+              </mesh>
 
-        {/* Left ventral / pelvic fin - Child 18 */}
-        <mesh position={[-0.35, -0.52, 0.1]} rotation={[0.5, -0.1, 0.6]}>
-          <boxGeometry args={[0.35, 0.04, 0.25]} />
-          <meshStandardMaterial color="#c85e10" roughness={0.4} emissive="#c85e10" emissiveIntensity={0.35} flatShading />
-        </mesh>
+              {/* Peduncle (Tail connector) */}
+              <group ref={carpPeduncleRef} position={[0, 0.04, -0.4]}>
+                <mesh scale={[0.22, 0.22, 0.35]} castShadow>
+                  <sphereGeometry args={[1, 8, 6]} />
+                  <meshStandardMaterial color="#b84d08" roughness={0.3} emissive="#e06820" emissiveIntensity={0.45} />
+                </mesh>
 
-        {/* Anal fin (bottom rear) - Child 19 */}
-        <mesh position={[0, -0.55, -0.7]} rotation={[0.7, 0, 0]}>
-          <boxGeometry args={[0.04, 0.28, 0.42]} />
-          <meshStandardMaterial color="#c85e10" roughness={0.4} emissive="#c85e10" emissiveIntensity={0.3} flatShading />
-        </mesh>
-
-        {/* === BARBELS (4 golden whiskers) === */}
-        {/* Upper-right barbel - Child 20 */}
-        <mesh position={[0.18, -0.1, 1.52]} rotation={[0.55, 0.25, -0.35]}>
-          <cylinderGeometry args={[0.018, 0.004, 0.52, 6]} />
-          <meshBasicMaterial color="#f5c41a" />
-        </mesh>
-        {/* Upper-left barbel - Child 21 */}
-        <mesh position={[-0.18, -0.1, 1.52]} rotation={[0.55, -0.25, 0.35]}>
-          <cylinderGeometry args={[0.018, 0.004, 0.52, 6]} />
-          <meshBasicMaterial color="#f5c41a" />
-        </mesh>
-        {/* Lower-right corner barbel - Child 22 */}
-        <mesh position={[0.26, -0.22, 1.48]} rotation={[0.75, 0.3, -0.5]}>
-          <cylinderGeometry args={[0.013, 0.003, 0.38, 6]} />
-          <meshBasicMaterial color="#e8b010" />
-        </mesh>
-        {/* Lower-left corner barbel - Child 23 */}
-        <mesh position={[-0.26, -0.22, 1.48]} rotation={[0.75, -0.3, 0.5]}>
-          <cylinderGeometry args={[0.013, 0.003, 0.38, 6]} />
-          <meshBasicMaterial color="#e8b010" />
-        </mesh>
-
-        {/* === SCALE HIGHLIGHTS (raised disc overlays) === */}
-        <mesh position={[0.65, 0.18, 0.3]} rotation={[0.1, -0.5, 0.2]} scale={[0.18, 0.12, 0.04]}>
-          <sphereGeometry args={[1, 5, 4]} />
-          <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
-        </mesh>
-        <mesh position={[0.7, 0.05, -0.1]} rotation={[0.05, -0.5, 0.1]} scale={[0.18, 0.12, 0.04]}>
-          <sphereGeometry args={[1, 5, 4]} />
-          <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
-        </mesh>
-        <mesh position={[0.66, -0.1, -0.5]} rotation={[0.0, -0.5, 0.0]} scale={[0.18, 0.12, 0.04]}>
-          <sphereGeometry args={[1, 5, 4]} />
-          <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
-        </mesh>
-        <mesh position={[-0.65, 0.18, 0.3]} rotation={[0.1, 0.5, -0.2]} scale={[0.18, 0.12, 0.04]}>
-          <sphereGeometry args={[1, 5, 4]} />
-          <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
-        </mesh>
-        <mesh position={[-0.7, 0.05, -0.1]} rotation={[0.05, 0.5, -0.1]} scale={[0.18, 0.12, 0.04]}>
-          <sphereGeometry args={[1, 5, 4]} />
-          <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
-        </mesh>
-        <mesh position={[-0.66, -0.1, -0.5]} rotation={[0.0, 0.5, 0.0]} scale={[0.18, 0.12, 0.04]}>
-          <sphereGeometry args={[1, 5, 4]} />
-          <meshStandardMaterial color="#e07028" roughness={0.2} metalness={0.4} emissive="#f08030" emissiveIntensity={0.6} flatShading />
-        </mesh>
-
+                {/* Caudal Tail Group */}
+                <group ref={carpTailRef} position={[0, 0, -0.3]}>
+                  {/* Caudal tail upper lobe */}
+                  <mesh position={[0, 0.28, -0.3]} rotation={[0.45, 0, 0]}>
+                    <boxGeometry args={[0.05, 0.72, 0.58]} />
+                    <meshStandardMaterial color="#e07818" roughness={0.3} emissive="#e07818" emissiveIntensity={0.5} flatShading />
+                  </mesh>
+                  {/* Caudal tail lower lobe */}
+                  <mesh position={[0, -0.22, -0.3]} rotation={[-0.45, 0, 0]}>
+                    <boxGeometry args={[0.05, 0.62, 0.52]} />
+                    <meshStandardMaterial color="#d06010" roughness={0.3} emissive="#d06010" emissiveIntensity={0.5} flatShading />
+                  </mesh>
+                </group>
+              </group>
+            </group>
+          </group>
+        </group>
       </group>
 
       {/* Floating Bioluminescent Embers */}
