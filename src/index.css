@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+:root {
+  --color-deep-water: #071526;
+  --color-ocean-blue: #12345e;
+  --color-sea-green: #1a4a44;
+  --color-sunset-orange: #f46b45;
+  --color-sunset-yellow: #eea849;
+  --color-text-light: #f8fafc;
+  --color-text-muted: #94a3b8;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  width: 100%;
+  min-height: 100%;
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--color-deep-water);
+  color: var(--color-text-light);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+  min-height: 100%;
+  position: relative;
+}
+
+/* Utilities for general layout */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-sunset-orange) 0%, var(--color-sunset-yellow) 100%);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(244, 107, 69, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(244, 107, 69, 0.6);
+}
